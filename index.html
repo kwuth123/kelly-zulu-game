@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Kelly's Zulu Adventure 🌟</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --pink: #FF6B9D;
+    --pink-light: #FFB3D1;
+    --pink-pale: #FFF0F6;
+    --purple: #C77DFF;
+    --purple-light: #E8B4FF;
+    --yellow: #FFD93D;
+    --green: #6BCB77;
+    --green-light: #D4F7D7;
+    --blue: #4ECDC4;
+    --blue-light: #C8F7F4;
+    --coral: #FF6B6B;
+    --coral-light: #FFD0D0;
+    --white: #FFFFFF;
+    --text-dark: #2D2D2D;
+    --text-mid: #555;
+    --shadow: 0 4px 16px rgba(0,0,0,0.12);
+    --shadow-card: 0 6px 24px rgba(0,0,0,0.15);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: linear-gradient(135deg, #FFE8F5 0%, #F0E8FF 50%, #E8F5FF 100%);
+    min-height: 100vh;
+    overflow-x: hidden;
+    color: var(--text-dark);
+  }
+  .screen { display: none; min-height: 100vh; padding: 16px; flex-direction: column; align-items: center; }
+  .screen.active { display: flex; }
+
+  /* HOME */
+  #home {
+    background: linear-gradient(160deg, #FF9ED5 0%, #C77DFF 50%, #7EB8FF 100%);
+    justify-content: center;
+    text-align: center;
+    padding: 24px 20px;
+  }
+  .home-title { font-family: 'Fredoka One', cursive; font-size: 42px; color: white; text-shadow: 3px 3px 0 rgba(0,0,0,0.15); line-height: 1.1; margin-bottom: 6px; }
+  .home-sub { font-size: 16px; color: rgba(255,255,255,0.9); font-weight: 600; margin-bottom: 32px; }
+  .star-deco { font-size: 48px; animation: float 3s ease-in-out infinite; margin-bottom: 12px; }
+  @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
+  .world-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; width: 100%; max-width: 360px; margin-bottom: 20px; }
+  .world-card { background: white; border-radius: 20px; padding: 18px 12px; text-align: center; cursor: pointer; box-shadow: var(--shadow-card); transition: transform 0.15s; position: relative; overflow: hidden; }
+  .world-card:active { transform: scale(0.96); }
+  .world-card .world-icon { font-size: 36px; margin-bottom: 8px; }
+  .world-card .world-name { font-family: 'Fredoka One', cursive; font-size: 16px; color: var(--text-dark); }
+  .world-card .world-count { font-size: 11px; color: var(--text-mid); margin-top: 2px; }
+  .world-card .world-stars { font-size: 14px; margin-top: 6px; }
+  .world-card[data-world="0"] { border: 3px solid var(--pink); }
+  .world-card[data-world="1"] { border: 3px solid var(--blue); }
+  .world-card[data-world="2"] { border: 3px solid var(--green); }
+  .world-card[data-world="3"] { border: 3px solid var(--yellow); }
+  .total-stars-bar { background: rgba(255,255,255,0.25); border-radius: 20px; padding: 12px 20px; color: white; font-weight: 700; font-size: 16px; width: 100%; max-width: 360px; }
+
+  /* WORLD INTRO */
+  #world-intro { justify-content: center; text-align: center; }
+  .intro-icon { font-size: 72px; margin-bottom: 12px; animation: float 3s ease-in-out infinite; }
+  .intro-title { font-family: 'Fredoka One', cursive; font-size: 32px; margin-bottom: 6px; }
+  .intro-sub { font-size: 15px; color: var(--text-mid); margin-bottom: 28px; }
+  .level-select-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; max-width: 340px; margin-bottom: 20px; }
+  .level-btn { background: white; border: 3px solid #ddd; border-radius: 18px; padding: 16px 8px; text-align: center; cursor: pointer; transition: all 0.15s; box-shadow: 0 3px 10px rgba(0,0,0,0.08); }
+  .level-btn:active { transform: scale(0.96); }
+  .level-btn .lv-num { font-family: 'Fredoka One', cursive; font-size: 22px; }
+  .level-btn .lv-name { font-size: 12px; font-weight: 700; color: var(--text-mid); margin-top: 2px; }
+  .level-btn .lv-desc { font-size: 10px; color: #999; margin-top: 3px; }
+  .level-btn.unlocked-lv { border-color: var(--pink); }
+  .level-btn.unlocked-lv .lv-num { color: var(--pink); }
+  .level-btn.locked-lv { opacity: 0.45; cursor: default; }
+  .level-btn.done-lv { border-color: var(--green); }
+  .level-btn.done-lv .lv-num { color: var(--green); }
+  .back-btn { background: none; border: 2.5px solid var(--text-mid); border-radius: 30px; padding: 10px 24px; font-family: 'Nunito', sans-serif; font-size: 15px; font-weight: 700; cursor: pointer; color: var(--text-mid); transition: all 0.15s; }
+  .back-btn:active { background: #eee; }
+
+  /* GAME */
+  #game { padding: 12px 14px 20px; max-width: 420px; width: 100%; margin: 0 auto; }
+  .game-topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; width: 100%; }
+  .game-back-btn { background: white; border: none; border-radius: 12px; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; font-size: 18px; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+  .game-info { text-align: center; flex: 1; margin: 0 8px; }
+  .game-world-name { font-family: 'Fredoka One', cursive; font-size: 15px; color: var(--text-dark); }
+  .game-level-name { font-size: 11px; color: var(--text-mid); font-weight: 600; }
+  .score-pill { background: var(--yellow); border-radius: 20px; padding: 6px 12px; font-weight: 800; font-size: 14px; color: var(--text-dark); box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+  .progress-track { width: 100%; background: rgba(0,0,0,0.08); border-radius: 10px; height: 8px; margin-bottom: 16px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 10px; background: linear-gradient(90deg, var(--pink), var(--purple)); transition: width 0.5s ease; }
+
+  /* LEARN */
+  .learn-card { background: white; border-radius: 28px; padding: 24px 20px; width: 100%; text-align: center; box-shadow: var(--shadow-card); margin-bottom: 16px; }
+  .learn-emoji { font-size: 80px; margin-bottom: 8px; line-height: 1; }
+  .learn-zulu { font-family: 'Fredoka One', cursive; font-size: 34px; color: var(--pink); margin-bottom: 4px; }
+  .learn-english { font-size: 17px; font-weight: 700; color: var(--text-mid); margin-bottom: 14px; }
+  .speak-btn { background: linear-gradient(135deg, var(--purple), var(--pink)); color: white; border: none; border-radius: 30px; padding: 12px 28px; font-family: 'Nunito', sans-serif; font-size: 15px; font-weight: 800; cursor: pointer; box-shadow: 0 4px 12px rgba(199,125,255,0.4); transition: transform 0.1s; }
+  .speak-btn:active { transform: scale(0.95); }
+  .recorded-badge { display: inline-block; background: #E8F5E9; color: #2E7D32; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; margin-bottom: 10px; }
+  .nav-btns { display: flex; gap: 12px; width: 100%; }
+  .nav-btn { flex: 1; border: none; border-radius: 20px; padding: 14px; font-family: 'Nunito', sans-serif; font-size: 15px; font-weight: 800; cursor: pointer; transition: transform 0.1s, box-shadow 0.1s; box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
+  .nav-btn:active { transform: scale(0.96); }
+  .btn-prev { background: white; color: var(--text-mid); border: 2.5px solid #ddd; }
+  .btn-next { background: linear-gradient(135deg, var(--pink), var(--purple)); color: white; }
+  .btn-finish { background: linear-gradient(135deg, var(--green), var(--blue)); color: white; }
+
+  /* QUIZ */
+  .question-card { background: white; border-radius: 28px; padding: 20px; width: 100%; text-align: center; box-shadow: var(--shadow-card); margin-bottom: 16px; }
+  .q-label { font-size: 12px; font-weight: 700; color: var(--text-mid); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  .q-zulu { font-family: 'Fredoka One', cursive; font-size: 36px; color: var(--pink); margin-bottom: 6px; }
+  .q-english { font-size: 13px; color: #aaa; font-weight: 600; margin-bottom: 10px; }
+  .q-speak-btn { background: var(--purple-light); border: none; border-radius: 20px; padding: 8px 20px; font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 700; color: #6B3FA0; cursor: pointer; }
+  .choices-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
+  .choice-card { background: white; border: 3px solid #E8E8E8; border-radius: 20px; padding: 14px 8px; text-align: center; cursor: pointer; transition: all 0.15s; box-shadow: 0 3px 10px rgba(0,0,0,0.06); position: relative; overflow: hidden; }
+  .choice-card:active { transform: scale(0.96); }
+  .choice-emoji { font-size: 38px; margin-bottom: 6px; }
+  .choice-label { font-size: 12px; font-weight: 700; color: var(--text-mid); }
+  .choice-card.correct { border-color: var(--green); background: var(--green-light); animation: correctPop 0.4s ease; }
+  .choice-card.wrong { border-color: var(--coral); background: var(--coral-light); animation: wrongShake 0.4s ease; }
+  @keyframes correctPop { 0%{transform:scale(1)} 50%{transform:scale(1.08)} 100%{transform:scale(1)} }
+  @keyframes wrongShake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+
+  /* HEAR */
+  .listen-card { background: linear-gradient(135deg, var(--purple), var(--pink)); border-radius: 28px; padding: 28px 20px; width: 100%; text-align: center; box-shadow: var(--shadow-card); margin-bottom: 16px; }
+  .listen-icon { font-size: 56px; margin-bottom: 8px; }
+  .listen-title { font-family: 'Fredoka One', cursive; font-size: 22px; color: white; margin-bottom: 8px; }
+  .listen-sub { font-size: 13px; color: rgba(255,255,255,0.85); font-weight: 600; margin-bottom: 16px; }
+  .big-speak-btn { background: white; border: none; border-radius: 50%; width: 80px; height: 80px; display: inline-flex; align-items: center; justify-content: center; font-size: 36px; cursor: pointer; box-shadow: 0 6px 20px rgba(0,0,0,0.2); transition: transform 0.15s; margin: 0 auto; }
+  .big-speak-btn:active { transform: scale(0.92); }
+  .big-speak-btn.speaking { animation: pulse 0.6s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
+
+  /* TOAST */
+  .toast { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0); background: white; border-radius: 24px; padding: 24px 32px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.25); z-index: 1000; transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1); min-width: 240px; }
+  .toast.show { transform: translate(-50%, -50%) scale(1); }
+  .toast-icon { font-size: 52px; margin-bottom: 8px; }
+  .toast-msg { font-family: 'Fredoka One', cursive; font-size: 22px; margin-bottom: 4px; }
+  .toast-sub { font-size: 14px; color: var(--text-mid); font-weight: 600; }
+  .toast-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 999; display: none; }
+  .toast-overlay.show { display: block; }
+
+  /* LEVEL COMPLETE */
+  #level-complete { justify-content: center; text-align: center; background: linear-gradient(160deg, #FFE8F5, #F0E8FF); }
+  .complete-icon { font-size: 80px; margin-bottom: 12px; animation: float 2s ease-in-out infinite; }
+  .complete-title { font-family: 'Fredoka One', cursive; font-size: 34px; color: var(--pink); margin-bottom: 8px; }
+  .complete-sub { font-size: 16px; color: var(--text-mid); font-weight: 700; margin-bottom: 20px; }
+  .stars-earned { font-size: 40px; margin-bottom: 24px; letter-spacing: 6px; }
+  .big-btn { background: linear-gradient(135deg, var(--pink), var(--purple)); color: white; border: none; border-radius: 30px; padding: 16px 40px; font-family: 'Nunito', sans-serif; font-size: 18px; font-weight: 800; cursor: pointer; box-shadow: 0 6px 20px rgba(255,107,157,0.4); transition: transform 0.1s; margin-bottom: 12px; width: 100%; max-width: 280px; }
+  .big-btn:active { transform: scale(0.97); }
+  .big-btn.green { background: linear-gradient(135deg, var(--green), var(--blue)); box-shadow: 0 6px 20px rgba(107,203,119,0.4); }
+  .score-summary { background: white; border-radius: 20px; padding: 16px 24px; margin-bottom: 24px; box-shadow: var(--shadow); width: 100%; max-width: 300px; display: flex; justify-content: space-around; }
+  .score-item { text-align: center; }
+  .score-num { font-family: 'Fredoka One', cursive; font-size: 28px; color: var(--pink); }
+  .score-lbl { font-size: 11px; font-weight: 700; color: var(--text-mid); }
+
+  /* CONFETTI */
+  .confetti-piece { position: fixed; width: 10px; height: 10px; border-radius: 2px; animation: confettiFall 2.5s ease-in forwards; z-index: 998; pointer-events: none; }
+  @keyframes confettiFall { 0%{transform:translateY(-10px) rotate(0deg);opacity:1} 100%{transform:translateY(110vh) rotate(720deg);opacity:0} }
+
+  /* WORLD COMPLETE */
+  #world-complete { justify-content: center; text-align: center; background: linear-gradient(160deg, #FFE8F5, #F0E8FF, #E8FFEF); }
+  .trophy-icon { font-size: 96px; animation: float 2s ease-in-out infinite; margin-bottom: 12px; }
+</style>
+</head>
+<body>
+
+<div class="toast-overlay" id="toast-overlay"></div>
+<div class="toast" id="toast">
+  <div class="toast-icon" id="toast-icon">⭐</div>
+  <div class="toast-msg" id="toast-msg">Amazing!</div>
+  <div class="toast-sub" id="toast-sub">You rock!</div>
+</div>
+
+<!-- HOME -->
+<div class="screen active" id="home">
+  <div class="star-deco">⭐</div>
+  <div class="home-title">Kelly's Zulu<br>Adventure!</div>
+  <div class="home-sub">Tap a world to start playing 👇</div>
+  <div class="world-grid" id="world-grid">
+    <div class="world-card" data-world="0" onclick="openWorld(0)">
+      <div class="world-icon">👗</div>
+      <div class="world-name">Clothes</div>
+      <div class="world-count">16 words</div>
+      <div class="world-stars" id="world-stars-0">✩✩✩✩</div>
+    </div>
+    <div class="world-card" data-world="1" onclick="openWorld(1)">
+      <div class="world-icon">🎒</div>
+      <div class="world-name">School Bag</div>
+      <div class="world-count">8 words</div>
+      <div class="world-stars" id="world-stars-1">✩✩✩✩</div>
+    </div>
+    <div class="world-card" data-world="2" onclick="openWorld(2)">
+      <div class="world-icon">🏫</div>
+      <div class="world-name">Classroom</div>
+      <div class="world-count">13 words</div>
+      <div class="world-stars" id="world-stars-2">✩✩✩✩</div>
+    </div>
+    <div class="world-card" data-world="3" onclick="openWorld(3)">
+      <div class="world-icon">☀️</div>
+      <div class="world-name">Weather</div>
+      <div class="world-count">7 words</div>
+      <div class="world-stars" id="world-stars-3">✩✩✩✩</div>
+    </div>
+  </div>
+  <div class="total-stars-bar" id="total-stars-bar">⭐ 0 stars earned so far!</div>
+</div>
+
+<!-- WORLD INTRO -->
+<div class="screen" id="world-intro">
+  <div style="max-width:380px;width:100%;text-align:center;padding-top:20px;">
+    <div class="intro-icon" id="intro-icon">👗</div>
+    <div class="intro-title" id="intro-title">Clothes World</div>
+    <div class="intro-sub" id="intro-sub">Pick a level to play!</div>
+    <div class="level-select-grid" id="level-select-grid">
+      <div class="level-btn unlocked-lv" data-level="0" onclick="startLevel(0)">
+        <div class="lv-num">1</div>
+        <div class="lv-name">👀 Learn It</div>
+        <div class="lv-desc">See & hear words</div>
+      </div>
+      <div class="level-btn locked-lv" data-level="1">
+        <div class="lv-num">2</div>
+        <div class="lv-name">🖼️ Pick It</div>
+        <div class="lv-desc">Choose the picture</div>
+      </div>
+      <div class="level-btn locked-lv" data-level="2">
+        <div class="lv-num">3</div>
+        <div class="lv-name">🔤 Match It</div>
+        <div class="lv-desc">Word to picture</div>
+      </div>
+      <div class="level-btn locked-lv" data-level="3">
+        <div class="lv-num">4</div>
+        <div class="lv-name">👂 Hear It</div>
+        <div class="lv-desc">Listen only!</div>
+      </div>
+    </div>
+    <button class="back-btn" onclick="goHome()">← Back</button>
+  </div>
+</div>
+
+<!-- GAME -->
+<div class="screen" id="game">
+  <div class="game-topbar">
+    <button class="game-back-btn" onclick="goWorldIntro()">←</button>
+    <div class="game-info">
+      <div class="game-world-name" id="game-world-name">Clothes</div>
+      <div class="game-level-name" id="game-level-name">Level 1: Learn It</div>
+    </div>
+    <div class="score-pill" id="score-pill">⭐ 0</div>
+  </div>
+  <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+  <div id="game-content" style="width:100%;"></div>
+</div>
+
+<!-- LEVEL COMPLETE -->
+<div class="screen" id="level-complete">
+  <div class="complete-icon" id="lc-icon">🎉</div>
+  <div class="complete-title" id="lc-title">Level Done!</div>
+  <div class="complete-sub" id="lc-sub">You are amazing!</div>
+  <div class="stars-earned" id="lc-stars">⭐⭐⭐</div>
+  <div class="score-summary">
+    <div class="score-item"><div class="score-num" id="lc-correct">0</div><div class="score-lbl">Correct</div></div>
+    <div class="score-item"><div class="score-num" id="lc-score">0</div><div class="score-lbl">Stars</div></div>
+    <div class="score-item"><div class="score-num" id="lc-streak">0</div><div class="score-lbl">Best Streak</div></div>
+  </div>
+  <button class="big-btn green" id="lc-next-btn" onclick="nextLevelOrWorld()">Next Level ➜</button>
+  <button class="back-btn" onclick="goWorldIntro()" style="margin-top:8px;">Choose level</button>
+</div>
+
+<!-- WORLD COMPLETE -->
+<div class="screen" id="world-complete">
+  <div class="trophy-icon">🏆</div>
+  <div class="complete-title" id="wc-title">World Complete!</div>
+  <div class="complete-sub" id="wc-sub">You finished all 4 levels!</div>
+  <div class="stars-earned" id="wc-stars">⭐⭐⭐⭐</div>
+  <div style="font-size:15px;color:var(--text-mid);font-weight:700;margin-bottom:24px;" id="wc-msg">Kelly, you are a Zulu superstar! 🌟</div>
+  <button class="big-btn" onclick="goHome()">🏠 Home</button>
+</div>
+
+<script>
+const WORLDS = [
+  {
+    name: "Clothes", icon: "👗", color: "#FF6B9D",
+    words: [
+      { zulu: "ingubo", english: "dress", emoji: "👗" },
+      { zulu: "isiketi", english: "skirt", emoji: "🩱" },
+      { zulu: "ibhulukwe", english: "trousers", emoji: "👖" },
+      { zulu: "isikhafu", english: "scarf", emoji: "🧣" },
+      { zulu: "ikepisi", english: "cap", emoji: "🧢" },
+      { zulu: "isigqoko", english: "hat", emoji: "👒" },
+      { zulu: "ijezi", english: "jersey", emoji: "🧥" },
+      { zulu: "ihembe", english: "shirt", emoji: "👔" },
+      { zulu: "isikibha", english: "t-shirt", emoji: "👕" },
+      { zulu: "ijazi", english: "jacket", emoji: "🥼" },
+      { zulu: "amateku", english: "sneakers", emoji: "👟" },
+      { zulu: "izicathulo", english: "sandals", emoji: "👡" },
+      { zulu: "amasokisi", english: "socks", emoji: "🧦" },
+      { zulu: "ivesti", english: "vest", emoji: "🎽" },
+      { zulu: "ibhande", english: "belt", emoji: "👜" },
+      { zulu: "isikhindi", english: "shorts", emoji: "🩳" }
+    ]
+  },
+  {
+    name: "School Bag", icon: "🎒", color: "#4ECDC4",
+    words: [
+      { zulu: "isikhwama", english: "school bag", emoji: "🎒" },
+      { zulu: "ipensela", english: "pencil", emoji: "✏️" },
+      { zulu: "ipeni", english: "pen", emoji: "🖊️" },
+      { zulu: "irula", english: "ruler", emoji: "📏" },
+      { zulu: "umshini", english: "sharpener", emoji: "✂️" },
+      { zulu: "isikero", english: "scissors", emoji: "✂️" },
+      { zulu: "amakrayoni", english: "crayons", emoji: "🖍️" },
+      { zulu: "incwadi", english: "book", emoji: "📚" }
+    ]
+  },
+  {
+    name: "Classroom", icon: "🏫", color: "#6BCB77",
+    words: [
+      { zulu: "ushokhi", english: "chalk", emoji: "🪨" },
+      { zulu: "irabha", english: "eraser", emoji: "🟫" },
+      { zulu: "iphepha", english: "paper", emoji: "📄" },
+      { zulu: "isinamathisela", english: "glue stick", emoji: "🔵" },
+      { zulu: "ibhodi", english: "blackboard", emoji: "🟫" },
+      { zulu: "umnyango", english: "door", emoji: "🚪" },
+      { zulu: "iwindi", english: "window", emoji: "🪟" },
+      { zulu: "ideski", english: "desk", emoji: "🪑" },
+      { zulu: "isihlalo", english: "chair", emoji: "🪑" },
+      { zulu: "umpompi", english: "tap", emoji: "🚰" },
+      { zulu: "usinki", english: "sink", emoji: "🚿" },
+      { zulu: "umata", english: "mat", emoji: "🟧" },
+      { zulu: "itafula", english: "table", emoji: "🪵" }
+    ]
+  },
+  {
+    name: "Weather", icon: "☀️", color: "#FFD93D",
+    words: [
+      { zulu: "kuyashisa", english: "it is hot", emoji: "🌡️" },
+      { zulu: "libalele", english: "it is sunny", emoji: "☀️" },
+      { zulu: "kuyabanda", english: "it is cold", emoji: "🥶" },
+      { zulu: "liyaduma", english: "it is thundering", emoji: "⛈️" },
+      { zulu: "kuyanetha", english: "heavy rain", emoji: "🌧️" },
+      { zulu: "liyana", english: "it is raining", emoji: "🌦️" },
+      { zulu: "linomoya", english: "it is windy", emoji: "💨" }
+    ]
+  }
+];
+
+// Audio - loads from same folder as index.html
+const RECORDED_AUDIO = {
+  "ingubo": "audio/ingubo.m4a",
+  "ipensela": "audio/ipensela.m4a",
+  "liyana": "audio/liyana.m4a"
+};
+
+let state = {
+  currentWorld: 0, currentLevel: 0, currentQ: 0,
+  score: 0, correct: 0, streak: 0, bestStreak: 0,
+  worldProgress: [0,0,0,0],
+  worldStars: [[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]],
+  totalStars: 0, questions: [], answered: false
+};
+
+function saveState() {
+  try { localStorage.setItem('kellyZuluState', JSON.stringify({ worldProgress: state.worldProgress, worldStars: state.worldStars, totalStars: state.totalStars })); } catch(e) {}
+}
+function loadState() {
+  try { const s = JSON.parse(localStorage.getItem('kellyZuluState') || 'null'); if(s){ state.worldProgress=s.worldProgress||[0,0,0,0]; state.worldStars=s.worldStars||[[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]]; state.totalStars=s.totalStars||0; } } catch(e) {}
+}
+
+let currentAudio = null;
+function speak(text) {
+  if (RECORDED_AUDIO[text]) {
+    if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; }
+    currentAudio = new Audio(RECORDED_AUDIO[text]);
+    currentAudio.play().catch(() => fallbackSpeak(text));
+    return;
+  }
+  fallbackSpeak(text);
+}
+function fallbackSpeak(text) {
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'zu'; u.rate = 0.85; u.pitch = 1.1;
+  const voices = window.speechSynthesis.getVoices();
+  const v = voices.find(v => v.lang==='zu'||v.lang==='zu-ZA') || voices.find(v => v.lang==='en-ZA');
+  if (v) u.voice = v;
+  window.speechSynthesis.speak(u);
+}
+
+function showScreen(id) { document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); window.scrollTo(0,0); }
+function goHome() { updateHomeScreen(); showScreen('home'); }
+function openWorld(w) { state.currentWorld=w; updateWorldIntro(); showScreen('world-intro'); }
+function goWorldIntro() { updateWorldIntro(); showScreen('world-intro'); }
+
+function updateHomeScreen() {
+  let total=0;
+  WORLDS.forEach((w,wi) => {
+    const stars=state.worldStars[wi].reduce((a,b)=>a+b,0); total+=stars;
+    const el=document.getElementById('world-stars-'+wi);
+    if(el){ let s=''; for(let i=0;i<4;i++) s+=state.worldStars[wi][i]>0?'⭐':'✩'; el.textContent=s; }
+  });
+  state.totalStars=total;
+  const tb=document.getElementById('total-stars-bar');
+  if(tb) tb.textContent=`⭐ ${total} stars earned so far!`;
+}
+
+function updateWorldIntro() {
+  const w=WORLDS[state.currentWorld];
+  document.getElementById('intro-icon').textContent=w.icon;
+  document.getElementById('intro-title').textContent=w.name+' World';
+  document.getElementById('intro-sub').textContent=w.words.length+' words to learn!';
+  const progress=state.worldProgress[state.currentWorld];
+  const grid=document.getElementById('level-select-grid');
+  const btns=grid.querySelectorAll('.level-btn');
+  const names=['👀 Learn It','🖼️ Pick It','🔤 Match It','👂 Hear It'];
+  const descs=['See & hear words','Choose the picture','Word to picture','Listen only!'];
+  btns.forEach((btn,i) => {
+    btn.className='level-btn'; btn.onclick=null;
+    const stars=state.worldStars[state.currentWorld][i];
+    const starsStr=stars>0?' '+'⭐'.repeat(stars):'';
+    if(i<progress){ btn.classList.add('done-lv'); btn.innerHTML=`<div class="lv-num">${i+1}${starsStr}</div><div class="lv-name">${names[i]}</div><div class="lv-desc">✅ Done!</div>`; btn.onclick=()=>startLevel(i); }
+    else if(i===progress){ btn.classList.add('unlocked-lv'); btn.innerHTML=`<div class="lv-num">${i+1}</div><div class="lv-name">${names[i]}</div><div class="lv-desc">${descs[i]}</div>`; btn.onclick=()=>startLevel(i); }
+    else { btn.classList.add('locked-lv'); btn.innerHTML=`<div class="lv-num">${i+1}</div><div class="lv-name">${names[i]}</div><div class="lv-desc">🔒 Locked</div>`; }
+  });
+}
+
+function startLevel(level) {
+  state.currentLevel=level; state.currentQ=0; state.score=0; state.correct=0; state.streak=0; state.bestStreak=0; state.answered=false;
+  const w=WORLDS[state.currentWorld];
+  document.getElementById('game-world-name').textContent=w.name;
+  const lvNames=['Level 1: Learn It','Level 2: Pick It','Level 3: Match It','Level 4: Hear It'];
+  document.getElementById('game-level-name').textContent=lvNames[level];
+  document.getElementById('score-pill').textContent='⭐ 0';
+  state.questions=level===0?[...w.words]:shuffle([...w.words]);
+  showScreen('game'); renderQuestion();
+}
+
+function shuffle(arr) { for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; } return arr; }
+
+function renderQuestion() {
+  const w=WORLDS[state.currentWorld];
+  const q=state.questions[state.currentQ];
+  const total=state.questions.length;
+  document.getElementById('progress-fill').style.width=((state.currentQ/total)*100)+'%';
+  state.answered=false;
+  const gc=document.getElementById('game-content');
+  if(state.currentLevel===0) renderLearn(gc,q,total);
+  else if(state.currentLevel===1||state.currentLevel===2) renderPick(gc,q,w);
+  else renderHear(gc,q,w);
+}
+
+function renderLearn(gc,q,total) {
+  const isLast=state.currentQ===total-1;
+  const hasReal=!!RECORDED_AUDIO[q.zulu];
+  gc.innerHTML=`
+    <div class="learn-card">
+      <div class="learn-emoji">${q.emoji}</div>
+      <div class="learn-zulu">${q.zulu}</div>
+      <div class="learn-english">${q.english}</div>
+      ${hasReal?'<div class="recorded-badge">🎙️ Real voice</div>':''}
+      <button class="speak-btn" onclick="speak('${q.zulu}')">🔊 Hear it!</button>
+    </div>
+    <div style="font-size:13px;color:var(--text-mid);font-weight:700;text-align:center;margin-bottom:12px;">Word ${state.currentQ+1} of ${total}</div>
+    <div class="nav-btns">
+      ${state.currentQ>0?`<button class="nav-btn btn-prev" onclick="prevQ()">← Back</button>`:'<div style="flex:1"></div>'}
+      <button class="nav-btn ${isLast?'btn-finish':'btn-next'}" onclick="nextLearn()">${isLast?'🎉 Done!':'Next →'}</button>
+    </div>`;
+  setTimeout(()=>speak(q.zulu),400);
+}
+
+function prevQ() { if(state.currentQ>0){state.currentQ--;renderQuestion();} }
+function nextLearn() { if(state.currentQ<state.questions.length-1){state.currentQ++;renderQuestion();}else{completedLevel(3,0);} }
+
+function renderPick(gc,q,w) {
+  const others=w.words.filter(x=>x.zulu!==q.zulu);
+  const allChoices=shuffle([q,...shuffle(others).slice(0,3)]);
+  const isL2=state.currentLevel===1;
+  gc.innerHTML=`
+    <div class="question-card">
+      <div class="q-label">${isL2?'What picture matches this word?':'Match the word to the picture!'}</div>
+      <div class="q-zulu">${q.zulu}</div>
+      <div class="q-english">${q.english}</div>
+      <button class="q-speak-btn" onclick="speak('${q.zulu}')">🔊 Hear it</button>
+    </div>
+    <div class="choices-grid-2" id="choices-grid">
+      ${allChoices.map((c,i)=>`
+        <div class="choice-card" id="choice-${i}" onclick="answerPick(${i},'${c.zulu}','${q.zulu}')">
+          <div class="choice-emoji">${c.emoji}</div>
+          <div class="choice-label">${isL2?c.english:c.zulu}</div>
+        </div>`).join('')}
+    </div>`;
+  setTimeout(()=>speak(q.zulu),300);
+}
+
+function answerPick(idx,chosen,correct) {
+  if(state.answered)return;
+  state.answered=true;
+  const isCorrect=chosen===correct;
+  document.getElementById('choice-'+idx).classList.add(isCorrect?'correct':'wrong');
+  if(isCorrect){
+    state.score++;state.correct++;state.streak++;
+    if(state.streak>state.bestStreak)state.bestStreak=state.streak;
+    document.getElementById('score-pill').textContent='⭐ '+state.score;
+    const msgs=[['🌟','Amazing!','You got it!'],['🎉','Yes!!','Brilliant!'],['💫','Super!','Keep going!'],['🔥','On fire!','So smart!'],['⭐','Correct!','Go Kelly!']];
+    const m=msgs[Math.floor(Math.random()*msgs.length)];
+    showToast(m[0],m[1],m[2]);
+  } else {
+    state.streak=0;
+    showToast('💪','Try again!','You\'ll get it!');
+  }
+  setTimeout(()=>{hideToast();nextQuestion();},1200);
+}
+
+function renderHear(gc,q,w) {
+  const others=w.words.filter(x=>x.zulu!==q.zulu);
+  const allChoices=shuffle([q,...shuffle(others).slice(0,3)]);
+  gc.innerHTML=`
+    <div class="listen-card">
+      <div class="listen-icon">👂</div>
+      <div class="listen-title">Listen carefully!</div>
+      <div class="listen-sub">Tap the speaker, then pick the right picture</div>
+      <button class="big-speak-btn" id="main-speak-btn" onclick="doSpeak('${q.zulu}')">🔊</button>
+    </div>
+    <div class="choices-grid-2" id="choices-grid">
+      ${allChoices.map((c,i)=>`
+        <div class="choice-card" id="choice-${i}" onclick="answerPick(${i},'${c.zulu}','${q.zulu}')">
+          <div class="choice-emoji">${c.emoji}</div>
+          <div class="choice-label">${c.english}</div>
+        </div>`).join('')}
+    </div>`;
+  setTimeout(()=>doSpeak(q.zulu),500);
+}
+
+function doSpeak(word) {
+  const btn=document.getElementById('main-speak-btn');
+  if(btn){btn.classList.add('speaking');setTimeout(()=>btn&&btn.classList.remove('speaking'),1200);}
+  speak(word);
+}
+
+function nextQuestion() {
+  if(state.currentQ<state.questions.length-1){
+    state.currentQ++;renderQuestion();
+    document.getElementById('progress-fill').style.width=((state.currentQ/state.questions.length)*100)+'%';
+  } else {
+    const pct=state.correct/state.questions.length;
+    completedLevel(pct>=0.9?3:pct>=0.7?2:1,state.score);
+  }
+}
+
+function completedLevel(stars,score) {
+  const wIdx=state.currentWorld,lIdx=state.currentLevel;
+  if(lIdx+1>state.worldProgress[wIdx])state.worldProgress[wIdx]=lIdx+1;
+  if(stars>(state.worldStars[wIdx][lIdx]||0))state.worldStars[wIdx][lIdx]=stars;
+  saveState();
+  const msgs=[['🎉','You did it!','You learned all the words!'],['🌟','Amazing Kelly!','You\'re a Zulu superstar!'],['🏆','Incredible!','You\'re on fire today!'],['👑','Queen of Zulu!','You are SO clever!']];
+  const m=msgs[Math.floor(Math.random()*msgs.length)];
+  document.getElementById('lc-icon').textContent=m[0];
+  document.getElementById('lc-title').textContent=m[1];
+  document.getElementById('lc-sub').textContent=m[2];
+  document.getElementById('lc-stars').textContent='⭐'.repeat(stars)+'✩'.repeat(3-Math.min(stars,3));
+  document.getElementById('lc-correct').textContent=state.correct!==undefined?state.correct:'—';
+  document.getElementById('lc-score').textContent=score;
+  document.getElementById('lc-streak').textContent=state.bestStreak;
+  const nextBtn=document.getElementById('lc-next-btn');
+  if(lIdx>=3){nextBtn.textContent='🏆 World Complete!';nextBtn.onclick=showWorldComplete;}
+  else{nextBtn.textContent='Next Level ➜';nextBtn.onclick=nextLevelOrWorld;}
+  launchConfetti();showScreen('level-complete');
+}
+
+function nextLevelOrWorld(){if(state.currentLevel+1<=3)startLevel(state.currentLevel+1);else showWorldComplete();}
+function showWorldComplete(){
+  const w=WORLDS[state.currentWorld];
+  const totalStars=state.worldStars[state.currentWorld].reduce((a,b)=>a+b,0);
+  document.getElementById('wc-title').textContent=w.name+' Complete!';
+  document.getElementById('wc-sub').textContent='You finished all 4 levels! Amazing work!';
+  document.getElementById('wc-stars').textContent='⭐'.repeat(Math.min(totalStars,12));
+  const wmsgs=['Kelly, you are a Zulu superstar! 🌟','Wena ukhulile! (You are amazing!)','Keep it up — you are SO clever! 💪','Your teacher will be so proud! 🎓'];
+  document.getElementById('wc-msg').textContent=wmsgs[state.currentWorld%wmsgs.length];
+  launchConfetti();showScreen('world-complete');
+}
+
+function showToast(icon,msg,sub){document.getElementById('toast-icon').textContent=icon;document.getElementById('toast-msg').textContent=msg;document.getElementById('toast-sub').textContent=sub;document.getElementById('toast').classList.add('show');document.getElementById('toast-overlay').classList.add('show');}
+function hideToast(){document.getElementById('toast').classList.remove('show');document.getElementById('toast-overlay').classList.remove('show');}
+
+function launchConfetti(){const colors=['#FF6B9D','#C77DFF','#FFD93D','#6BCB77','#4ECDC4','#FF6B6B'];for(let i=0;i<40;i++){const c=document.createElement('div');c.className='confetti-piece';c.style.left=Math.random()*100+'vw';c.style.top='-10px';c.style.background=colors[Math.floor(Math.random()*colors.length)];c.style.transform=`rotate(${Math.random()*360}deg)`;c.style.animationDelay=(Math.random()*0.8)+'s';c.style.animationDuration=(1.5+Math.random()*1.5)+'s';document.body.appendChild(c);setTimeout(()=>c.remove(),3500);}}
+
+window.addEventListener('load',()=>{loadState();updateHomeScreen();if(window.speechSynthesis){window.speechSynthesis.getVoices();window.speechSynthesis.onvoiceschanged=()=>{};}});
+</script>
+</body>
+</html>
